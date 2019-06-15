@@ -145,7 +145,7 @@ def game_loop(x, y, w, h, my_socket, user_name,start_time):
 
     while not done and time.time()-start_time <= GAME_TIME:
         if user_name != '':
-            code_msg, msg = recv_any_msg(my_socket, user_name)
+            code_msg, msg, user_name_other= recv_any_msg(my_socket)
             if code_msg == 0:
                 pygame.quit()
                 quit()
@@ -154,13 +154,13 @@ def game_loop(x, y, w, h, my_socket, user_name,start_time):
                 print 'message received'
                 print 'this is msg: ' + msg
                 show_message(msg, False)
-                BUTTONS.append(('other user', OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60, 20, BRIGHT_BLUE, BLUE, '1',10))
+                BUTTONS.append((user_name_other, OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60, 20, BRIGHT_BLUE, BLUE, '1',10))
                 BUTTONS.append(('computer', OTHER_MSG_X - MSG_SIZE[0] - 70, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '1',10))
             if code_msg == 2:
                 print 'message received'
                 print 'this is msg: ' + msg
                 show_message(msg, False)
-                BUTTONS.append(('other user', OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_BLUE, BLUE, '2',10))
+                BUTTONS.append((user_name_other, OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_BLUE, BLUE, '2',10))
                 BUTTONS.append(('computer', OTHER_MSG_X - MSG_SIZE[0] -70, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '2',10))
             if code_msg == 3:
                 return msg
@@ -312,21 +312,21 @@ def show_message_received(msg):
     print msg
 
 
-def recv_any_msg(my_socket, user_name):
+def recv_any_msg(my_socket):
     msg = recv_msg(my_socket)
     msg = msg.split('#')
     if msg[0] == 'err':
-        return 0, msg[1]
+        return 0, msg[1], msg[0]
     if msg[0] == 'rgl' and msg[1] == 'server':
         print 'im here'
-        print msg[2]
-        return 2, msg[2]
+        print msg[2], msg[0]
+        return 2, msg[2], msg[0]
     if msg[0] == 'rgl':
-        return 1, msg[2]
+        return 1, msg[2], msg[1]
     if msg[0].lower() == 'end':
         msg = '#'.join(msg)
-        return 3, msg
-    return 4, msg
+        return 3, msg, msg[0]
+    return 4, msg, msg[0]
 
 
 def send_end_message(my_socket,user_name):
