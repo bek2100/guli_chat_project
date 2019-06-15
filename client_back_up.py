@@ -121,7 +121,7 @@ def start_screen(my_socket):
     screen.fill(BACKGROUND_COLOR)
     con = False
     start_time = time.time()
-    user_name = text_box(WINDOW_WIDTH/3 - 30, 20, 140, 32,my_socket,'',start_time)
+    user_name = game_loop(WINDOW_WIDTH/3 - 30, 20, 140, 32,my_socket,'',start_time)
     while not finish and not con:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -132,7 +132,7 @@ def start_screen(my_socket):
 
 
 #rect parameters
-def text_box(x, y, w, h, my_socket, user_name,start_time):
+def game_loop(x, y, w, h, my_socket, user_name,start_time):
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()
     input_box = pygame.Rect(x,y,w,h)
@@ -422,7 +422,7 @@ def main():
     screen.fill(BACKGROUND_COLOR)
     start_time = time.time()
     while time.time() - start_time <= GAME_TIME:
-        msg = text_box(10, WINDOW_HEIGHT - 50, 60, 30, my_socket, user_name, start_time)
+        msg = game_loop(10, WINDOW_HEIGHT - 50, 60, 30, my_socket, user_name, start_time)
         pygame.draw.rect(screen, BACKGROUND_COLOR, (0, WINDOW_HEIGHT - 50, 500, 40), 0)
         pygame.draw.rect(screen,BACKGROUND_COLOR,(10, WINDOW_HEIGHT - 50, 130, 70),0)
     print 'end game'
