@@ -16,10 +16,10 @@ BRIGHT_GREEN = 124, 252, 0
 GREEN = 60, 179, 113
 
 MSG_SIZE = 200, 30
-SPACE_BETWEEN_MSGS = MSG_SIZE[1] + 5
+SPACE_BETWEEN_MSGS = 30 + 5
 
 SELF_MESSAGE_X = 20
-OTHER_MSG_X = WINDOW_WIDTH - 220
+OTHER_MSG_X = WINDOW_WIDTH - 270
 SELF_MSG_COLOR = 173,255,47  # green
 OTHER_MSG_COLOR = 105, 105, 105
 last_msg_y = 50
@@ -34,7 +34,54 @@ LOW_SCORE_USER = ''
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
 names = []
-x_names = 40
+x_names = 80
+
+
+class TextBox:
+
+    def __init__(self, text, pos, font, bg_color, text_color=(255, 255, 255)):
+        self.font = font
+        self.font_height = font.get_linesize()
+        self.text = text.split()  # Single words.
+        self.rect = pygame.Rect(pos, (250, 30))
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.render_text_surfaces()
+
+    def render_text_surfaces(self):
+        """Create a new text images list when the rect gets scaled."""
+        self.images = []  # The text surfaces.
+        line_width = 0
+        line = []
+        space_width = self.font.size(' ')[0]
+
+        # Put the words one after the other into a list if they still
+        # fit on the same line, otherwise render the line and append
+        # the resulting surface to the self.images list.
+        for word in self.text:
+            line_width += self.font.size(word)[0] + space_width
+            # Render a line if the line width is greater than the rect width.
+            if line_width > self.rect.w:
+                surf = self.font.render(' '.join(line), True, self.text_color)
+                self.images.append(surf)
+                line = []
+                line_width = self.font.size(word)[0] + space_width
+
+            line.append(word)
+
+        # Need to render the last line as well.
+        surf = self.font.render(' '.join(line), True, self.text_color)
+        self.images.append(surf)
+
+    def draw(self, screen):
+        """Draw the rect and the separate text images."""
+        pygame.draw.rect(screen, self.bg_color, self.rect)
+
+        for y, surf in enumerate(self.images):
+            # Don't blit below the rect area.
+            if y * self.font_height + self.font_height > self.rect.h:
+                break
+            screen.blit(surf, (self.rect.x, self.rect.y+y*self.font_height))
 
 
 def show_name_on_top(name):
@@ -59,19 +106,6 @@ def text_objects(text, font):
     return text_surface, text_surface.get_rect()
 
 
-def determine_message_size(msg):
-    if len(msg) <= 20:
-        return 30, msg
-    lines = (len(msg) / 20) + 1
-    msg1 = ''
-    for x in xrange(lines):
-        msg1 = msg[x*20:(1+x)*20]+'\n'
-        print x
-    print 'lines: ' + str(lines)
-    print 'msg: ' + msg1
-    return lines*20, msg1
-
-
 def show_message(msg, self_msg):
     global last_msg_y
     global BUTTONS
@@ -83,15 +117,23 @@ def show_message(msg, self_msg):
     else:
         x = OTHER_MSG_X
         color = OTHER_MSG_COLOR
-    h , msg = determine_message_size(msg)
-    pygame.draw.rect(screen, color, ((x, last_msg_y), (MSG_SIZE[0],h)))
-    small_text = pygame.font.Font("freesansbold.ttf", 15)
-    textSurf, text_rect = text_objects(msg, small_text)
-    text_rect.center = x + (MSG_SIZE[0] / 2), last_msg_y + (h / 2)
-    screen.blit(textSurf, text_rect)
+    if len(msg) <= 5:
+        size_font = 35
+    elif len(msg) < 10:
+        size_font = 30
+    elif len(msg) < 15:
+        size_font = 26
+    elif len(msg) < 20:
+        size_font = 22
+    else:
+        size_font = 13
+    size_font += 5
+    FONT = pygame.font.Font(None, size_font)
+    text_box = TextBox(msg,(x,last_msg_y),FONT,color,BLACK)
+    text_box.draw(screen)
     pygame.display.flip()
     last_msg_y += SPACE_BETWEEN_MSGS
-    if last_msg_y >= WINDOW_HEIGHT:
+    if last_msg_y >= WINDOW_HEIGHT-60:
         global OTHER_USER_NAME
         screen.fill(BACKGROUND_COLOR)
         show_name_on_top(OTHER_USER_NAME)
@@ -114,7 +156,7 @@ def button(msg, x, y, w, h, bc, c, action,text_size):
             #send err#QUIT msg
             pygame.quit()
             quit()
-        if action == '1' and msg == 'other user' and x < mouse[0] < x + w and y + h > mouse[1] > y:
+        if action == '1' and msg == OTHER_USER_NAME and x < mouse[0] < x + w and y + h > mouse[1] > y:
             SCORE += 1
             con = True
         elif action == '2' and msg == 'computer' and x < mouse[0] < x + w and y + h > mouse[1] > y:
@@ -176,14 +218,14 @@ def game_loop(x, y, w, h, my_socket, user_name, start_time):
                 print 'message received'
                 print 'this is msg: ' + msg
                 show_message(msg, False)
-                BUTTONS.append((user_name_other, OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60, 20, BRIGHT_BLUE, BLUE, '1',10))
-                BUTTONS.append(('computer', OTHER_MSG_X - MSG_SIZE[0] - 70, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '1',10))
+                BUTTONS.append((user_name_other, SELF_MESSAGE_X, last_msg_y-SPACE_BETWEEN_MSGS, 60, 20, BRIGHT_BLUE, BLUE, '1',10))
+                BUTTONS.append(('computer', SELF_MESSAGE_X+60, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '1',10))
             if code_msg == 2:
                 print 'message received'
                 print 'this is msg: ' + msg
                 show_message(msg, False)
-                BUTTONS.append((OTHER_USER_NAME, OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_BLUE, BLUE, '2',10))
-                BUTTONS.append(('computer', OTHER_MSG_X - MSG_SIZE[0] -70, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '2',10))
+                BUTTONS.append((OTHER_USER_NAME, SELF_MESSAGE_X, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_BLUE, BLUE, '2',10))
+                BUTTONS.append(('computer', SELF_MESSAGE_X+60, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '2',10))
             if code_msg == 3:
                 return msg
         check_buttons()
@@ -210,7 +252,7 @@ def game_loop(x, y, w, h, my_socket, user_name, start_time):
                         text = ''
                     elif event.key == pygame.K_BACKSPACE:
                         text = text[:-1]
-                        pygame.draw.rect(screen,BACKGROUND_COLOR,(x,y,w + 300,h+5), 0)
+                        pygame.draw.rect(screen,BACKGROUND_COLOR,(x,y,WINDOW_WIDTH,h+5), 0)
                         # Render the current text.
                         txt_surface = font.render(text, True, color)
                         # Resize the box if the text is too long.
@@ -228,27 +270,32 @@ def game_loop(x, y, w, h, my_socket, user_name, start_time):
         pygame.draw.rect(screen, (30,30,30), input_box, 2)
         txt_surface = font.render(text, True, color)
         # Resize the box if the text is too long.
+
         width = max(200, txt_surface.get_width() + 10)
         input_box.w = width
         # Blit the text.
         screen.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
         # Blit the input_box rect.
-        pygame.draw.rect(screen, color, input_box, 2)
+        if txt_surface.get_width() > WINDOW_WIDTH - 15:
+            problem_popups(x, y, 175, h+5,'chat', 'Message too long')
+            text = text[0:len(text)-6]
+            print 'too long'
+            pygame.draw.rect(screen, BACKGROUND_COLOR, (x, y, WINDOW_WIDTH, h + 20), 0)
 
         try:
             '{}'.format(text)
         except:
             text = ''
-            writing_in_hebrew(x, y, 175, h+5,'chat')
-
+            problem_popups(x, y, 175, h+5,'chat', 'Please Write in Hebrew')
+        pygame.draw.rect(screen, color, input_box, 2)
         pygame.display.flip()
         clock.tick(30)
 
 
-def writing_in_hebrew(x,y,w,h, action):
+def problem_popups(x,y,w,h, action, problem_txt):
     pygame.draw.rect(screen, BRIGHT_GREEN, (x,y,w,h))
     small_text = pygame.font.Font("freesansbold.ttf", 15)
-    textSurf, text_rect = text_objects('Please Write in English', small_text)
+    textSurf, text_rect = text_objects(problem_txt, small_text)
     text_rect.center = x + (w / 2), y + (h / 2)
     screen.blit(textSurf, text_rect)
     pygame.display.flip()
@@ -268,7 +315,7 @@ def check_buttons():
         pressed = button(msg, x, y, w, h, bc, c, action, text_size)
         if pressed:
             ind = BUTTONS.index(b)
-            if msg == 'other user':
+            if msg == OTHER_USER_NAME:
                 del BUTTONS[ind]
                 del BUTTONS[ind]
             if msg == 'computer':
