@@ -160,7 +160,7 @@ def game_loop(x, y, w, h, my_socket, user_name,start_time):
                 print 'message received'
                 print 'this is msg: ' + msg
                 show_message(msg, False)
-                BUTTONS.append((user_name_other, OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_BLUE, BLUE, '2',10))
+                BUTTONS.append((OTHER_USER_NAME, OTHER_MSG_X - MSG_SIZE[0] - 10, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_BLUE, BLUE, '2',10))
                 BUTTONS.append(('computer', OTHER_MSG_X - MSG_SIZE[0] -70, last_msg_y-SPACE_BETWEEN_MSGS, 60,20, BRIGHT_GREEN,GREEN, '2',10))
             if code_msg == 3:
                 return msg
@@ -313,6 +313,7 @@ def show_message_received(msg):
 
 
 def recv_any_msg(my_socket):
+    global OTHER_USER_NAME
     msg = recv_msg(my_socket)
     msg = msg.split('#')
     if msg[0] == 'err':
@@ -320,8 +321,9 @@ def recv_any_msg(my_socket):
     if msg[0] == 'rgl' and msg[1] == 'server':
         print 'im here'
         print msg[2], msg[0]
-        return 2, msg[2], msg[0]
+        return 2, msg[2], OTHER_USER_NAME
     if msg[0] == 'rgl':
+        OTHER_USER_NAME = msg[1]
         return 1, msg[2], msg[1]
     if msg[0].lower() == 'end':
         msg = '#'.join(msg)
