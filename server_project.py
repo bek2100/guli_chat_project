@@ -2,6 +2,7 @@ import socket
 import threading
 import time
 import random
+import json
 
 GAME_TIME = 120
 USERS = []
@@ -14,6 +15,9 @@ MSG_RND_TIME = 5
 msg = ''
 
 clients = []
+
+with open('question_and_possible_answers.json', 'r') as question_and_possible_answers:
+    questions_and_possible_answers_dict = json.load(question_and_possible_answers)
 
 
 def recv_message(s):
@@ -45,6 +49,20 @@ def send_start_msg(client_socket):
     print 'here'
 
 
+def message_is_questions(msg):
+    return msg[-1] == '?'
+
+
+def add_question_to_possible_questions(msg):
+    if msg not in questions_and_possible_answers_dict:
+        questions_and_possible_answers_dict[msg] = {'possible_answers': {}, 'user_guessed_server:': 0, 'user_guessed_user': 0}
+
+
+def save_questions_and_possible_answers_dict():
+    with open('question_and_possible_answers.json', 'w') as questions_and_possible_answers:
+        json.dump(questions_and_possible_answers_dict, questions_and_possible_answers)
+
+
 def recv_any_msg(client_socket):
     msg = (recv_message(client_socket))
     if msg == '':
@@ -55,12 +73,15 @@ def recv_any_msg(client_socket):
     print 'message got type:' + msg[0]
     if msg[0] == 'rgl':
         print 'got a rgl msg'
+        if message_is_questions(msg=msg[2]):
+            add_question_to_possible_questions(msg=msg[2])
         msg = '#'.join(msg)
         return '1', msg
     if msg[0] == 'err':
         msg = '#'.join(msg)
         return '0', msg
     if msg[0] == 'end':
+        save_questions_and_possible_answers_dict()
         msg = '#'.join(msg)
         return '2', msg
     msg = '#'.join(msg)
