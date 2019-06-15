@@ -237,7 +237,6 @@ def writing_in_hebrew(x,y,w,h, action):
             if event.type == pygame.QUIT:
                 finish = True
         conti = button('GOT IT', x+w, y, 80, h, BRIGHT_BLUE, BLUE, action, 18)
-        print 'here'
     pygame.draw.rect(screen, BACKGROUND_COLOR, (x, y, w+100, h+20), 0)
 
 
