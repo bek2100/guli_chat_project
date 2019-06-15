@@ -22,7 +22,7 @@ SELF_MESSAGE_X = 20
 OTHER_MSG_X = WINDOW_WIDTH - 220
 SELF_MSG_COLOR = 173,255,47  # green
 OTHER_MSG_COLOR = 105, 105, 105
-last_msg_y = 20
+last_msg_y = 50
 OTHER_USER_NAME = ''
 BUTTONS = []
 SCORE = 0
@@ -32,6 +32,26 @@ HIGH_SCORE_USER = ''
 LOW_SCORE = 0
 LOW_SCORE_USER = ''
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+
+names = []
+x_names = 40
+
+
+def show_name_on_top(name):
+    global x_names
+    global names
+    if name in names:
+        return
+    names.append(name)
+    y = 10
+    w = 20
+    h = 30
+    small_text = pygame.font.Font("freesansbold.ttf", 30)
+    textSurf, text_rect = text_objects_white(name, small_text)
+    text_rect.center = x_names + (w / 2), y + (h / 2)
+    screen.blit(textSurf, text_rect)
+    pygame.display.flip()
+    x_names += w
 
 
 def text_objects(text, font):
@@ -131,8 +151,8 @@ def start_screen(my_socket):
     return user_name
 
 
-#rect parameters
-def game_loop(x, y, w, h, my_socket, user_name,start_time):
+#  rect parameters
+def game_loop(x, y, w, h, my_socket, user_name, start_time):
     font = pygame.font.Font(None, 32)
     clock = pygame.time.Clock()
     input_box = pygame.Rect(x,y,w,h)
@@ -145,7 +165,7 @@ def game_loop(x, y, w, h, my_socket, user_name,start_time):
 
     while not done and time.time()-start_time <= GAME_TIME:
         if user_name != '':
-            code_msg, msg, user_name_other= recv_any_msg(my_socket)
+            code_msg, msg, user_name_other = recv_any_msg(my_socket)
             if code_msg == 0:
                 pygame.quit()
                 quit()
@@ -297,19 +317,17 @@ def send_rgl_msg(socket, user_name, msg):
 
 
 def receive_start_msg(my_socket):
+    global OTHER_USER_NAME
     msg = recv_s_msg(my_socket)
     print msg
-    if msg == 'GO':
+    msg = msg.split('#')
+    if msg[0] == 'GO':
+        OTHER_USER_NAME = msg[1]
         return
     else:
         print 'something went wrong'
         pygame.quit()
         quit()
-
-
-def show_message_received(msg):
-    print 'you got the following msg:'
-    print msg
 
 
 def recv_any_msg(my_socket):
@@ -363,7 +381,6 @@ def end_game(my_socket, user_name,msg):
             HIGH_SCORE = SCORE
             LOW_SCORE = 0
             return 3
-
 
 
 def text_objects_white(text, font):
@@ -421,6 +438,7 @@ def main():
     wait_screen()
     receive_start_msg(my_socket)
     screen.fill(BACKGROUND_COLOR)
+    show_name_on_top(OTHER_USER_NAME)
     start_time = time.time()
     while time.time() - start_time <= GAME_TIME:
         msg = game_loop(10, WINDOW_HEIGHT - 50, 60, 30, my_socket, user_name, start_time)

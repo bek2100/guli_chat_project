@@ -44,8 +44,12 @@ def send_err_msg(client_socket):
     send_msg(client_socket, 'err#QUIT')
 
 
-def send_start_msg(client_socket):
-    send_msg(client_socket, 'GO')
+def send_start_msg(client_socket,j):
+    if j == 1:
+        i = 0
+    else:
+        i = 1
+    send_msg(client_socket, 'GO#{}'.format(USERS[i]))
     print 'here'
 
 
@@ -104,7 +108,7 @@ def handle_client(client_socket, j):
     while len(USERS) < 2:
         if len(USERS) == 2:
             break
-    send_start_msg(client_socket)
+    send_start_msg(client_socket,j)
     start_time = time.time()
     s_time = time.time()
 
