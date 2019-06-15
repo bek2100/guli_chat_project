@@ -6,7 +6,10 @@ import random
 GAME_TIME = 120
 USERS = []
 random_messages = ['happy holiday!', 'see you next summer', 'miss you bae',
-                   'my mom says hi', 'wanna go to a party this friday?','ok', 'let me know']
+                   'my mom says hi', 'wanna go to a party this friday?', 'ok', 'let me know', 'im hungryyyy',
+                   'let it go', 'I love you', 'how long is that game?', 'how you doing?', 'ma osim ahar kah?', 'ma?',
+                   'LOL', 'WTF', 'hhhhhhhh', 'haha', 'tell me a joke', 'do you like this game?', 'this game sucks',
+                   'so original', 'k', 'this is boring', 'love it']
 MSG_RND_TIME = 5
 msg = ''
 
@@ -24,7 +27,7 @@ def recv_message(s):
 
 
 def send_msg(client_socket, msg):
-    client_socket.send(msg+'###')
+    client_socket.send(msg + '###')
 
 
 def rcv_start_message(client_socket):
@@ -34,11 +37,11 @@ def rcv_start_message(client_socket):
 
 
 def send_err_msg(client_socket):
-    send_msg(client_socket,'err#QUIT')
+    send_msg(client_socket, 'err#QUIT')
 
 
 def send_start_msg(client_socket):
-    send_msg(client_socket,'GO')
+    send_msg(client_socket, 'GO')
     print 'here'
 
 
@@ -64,15 +67,15 @@ def recv_any_msg(client_socket):
     return 3, msg
 
 
-def forward_msg(client_socket,msg):
+def forward_msg(client_socket, msg):
     send_msg(client_socket, msg)
 
 
 def send_msg_from_server(client_socket):
-    msg = (random_messages[random.randint(0,len(random_messages)-1)])
+    msg = (random_messages[random.randint(0, len(random_messages) - 1)])
     msg = 'rgl#server#' + msg
-    send_msg(client_socket,msg)
-    MSG_RND_TIME = random.randint(0,GAME_TIME/5)
+    send_msg(client_socket, msg)
+    MSG_RND_TIME = random.randint(0, GAME_TIME / 5)
 
 
 def handle_client(client_socket, j):
@@ -106,14 +109,13 @@ def handle_client(client_socket, j):
                     cl_socket.send(msg + '###')
             break
         end_time = time.time()
-        if end_time-start_time >= GAME_TIME:
+        if end_time - start_time >= GAME_TIME:
             print 'finishing game'
             break
-        if end_time-s_time >= MSG_RND_TIME:
+        if end_time - s_time >= MSG_RND_TIME:
             send_msg_from_server(client_socket)
             s_time = time.time()
             print 'here1'
-
 
 
 def main():
@@ -125,7 +127,7 @@ def main():
     j = 0
     while True:
         (client_socket, client_address) = server_socket.accept()
-        t = threading.Thread(target=handle_client, args=(client_socket, j, ))
+        t = threading.Thread(target=handle_client, args=(client_socket, j,))
         j += 1
         t.start()
         clients.append(client_socket)
