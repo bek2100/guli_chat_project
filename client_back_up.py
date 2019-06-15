@@ -92,9 +92,11 @@ def show_message(msg, self_msg):
     pygame.display.flip()
     last_msg_y += SPACE_BETWEEN_MSGS
     if last_msg_y >= WINDOW_HEIGHT:
+        global OTHER_USER_NAME
         screen.fill(BACKGROUND_COLOR)
+        show_name_on_top(OTHER_USER_NAME)
         pygame.display.flip()
-        last_msg_y = 20
+        last_msg_y = 50
         BUTTONS = []
 
 
